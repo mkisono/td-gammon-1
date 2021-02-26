@@ -1,0 +1,14 @@
+version: "3.5"
+
+services:
+  td_gammon:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: td_gammon:latest
+    container_name: td_gammon
+    ports:
+      - "8002:8002"
+    volumes:
+      - $PWD:/td_gammon
+    tty: true
