@@ -69,7 +69,7 @@ class TDAgent(Agent):
             # Iterate over all the legal moves and pick the best action
             for i, action in enumerate(actions):
                 observation, reward, done, info = env.step(action)
-                values[i] = self.net(observation)
+                values[i] = self.net(observation).detach()
 
                 # restore the board and other variables (undo the action)
                 env.game.restore_state(state)
@@ -109,7 +109,7 @@ class TDAgentGNU(TDAgent):
                 game.execute_play(self.color, action)
                 opponent = game.get_opponent(self.color)
                 observation = game.get_board_features(opponent) if env.model_type == 'nn' else env.render(mode='state_pixels')
-                values[i] = self.net(observation)
+                values[i] = self.net(observation).detach()
                 game.restore_state(state)
 
             best_action_index = int(np.argmax(values)) if self.color == WHITE else int(np.argmin(values))
