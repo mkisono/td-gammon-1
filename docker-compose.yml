@@ -8,7 +8,12 @@ services:
     image: td_gammon:latest
     container_name: td_gammon
     ports:
+      - "8001:8001"
       - "8002:8002"
     volumes:
       - $PWD:/td_gammon
-    tty: true
+    command:
+      - /usr/games/gnubg
+      - -t
+      - -p
+      - /td_gammon/td_gammon/gnubg/bridge.py
