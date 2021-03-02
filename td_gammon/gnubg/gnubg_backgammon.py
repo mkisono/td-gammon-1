@@ -125,6 +125,7 @@ class GnubgEnv:
 
     def reset(self):
         # Start a new session in gnubg simulator
+        self.gnubg = self.gnubg_interface.send_command("set sound enable off")
         self.gnubg = self.gnubg_interface.send_command("new session")
 
         if not self.is_difficulty_set:
@@ -212,6 +213,9 @@ class GnubgEnv:
 
         self.gnubg_interface.send_command('save setting')
 
+    def save(self, episode):
+        self.gnubg_interface.send_command(f'save match /td_gammon/games/match{episode}.sgf')
+
     def render(self, mode='human'):
         assert mode in ['human', 'rgb_array', 'state_pixels'], print(mode)
 
@@ -237,6 +241,7 @@ class GnubgEnv:
 def evaluate_vs_gnubg(agent, env, n_episodes):
     wins = {WHITE: 0, BLACK: 0}
 
+    evaluation_time = []
     for episode in range(n_episodes):
         observation, first_roll = env.reset()
         t = time.time()
@@ -260,10 +265,14 @@ def evaluate_vs_gnubg(agent, env, n_episodes):
                 wins[winner] += 1
                 tot = wins[WHITE] + wins[BLACK]
 
+                elapsed_time = time.time() - t
+                evaluation_time.append(elapsed_time)
                 print("EVAL => Game={:<6} {:>15} | Winner={} | after {:<4} plays || Wins: {}={:<6}({:<5.1f}%) | gnubg={:<6}({:<5.1f}%) | Duration={:<.3f} sec".format(
-                    episode + 1, '('+env.difficulty+')', info, env.gnubg.n_moves, agent.name, wins[WHITE], (wins[WHITE] / tot) * 100, wins[BLACK], (wins[BLACK] / tot) * 100, time.time() - t))
+                    episode + 1, '('+env.difficulty+')', info, env.gnubg.n_moves, agent.name, wins[WHITE], (wins[WHITE] / tot) * 100, wins[BLACK], (wins[BLACK] / tot) * 100, elapsed_time))
+                env.save(episode)
                 break
             observation = observation_next
 
     env.gnubg_interface.send_command("new session")
+    print(f'average evaluation time: {sum(evaluation_time) / n_episodes}')
     return wins
